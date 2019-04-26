@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-os.chdir(os.path.dirname(__file__))
+#os.chdir(os.path.dirname(__file__))
 
 import sys
 import chess
@@ -48,5 +48,5 @@ def computermove():
   return board.fen()
 
 if __name__ == "__main__":
-  app.run()
+  app.run(port=12345)
 
