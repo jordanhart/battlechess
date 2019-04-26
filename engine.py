@@ -133,11 +133,11 @@ if __name__ == "__main__":
     #print(cmd, file=sys.stderr)
 
     if cmd[0] == "uci":
-      # print("uciok")
+      print("uciok")
     elif cmd[0] == "ucinewgame":
       pass
     elif cmd[0] == "isready":
-      # print("readyok")
+      print("readyok")
     elif cmd[0] == "position":
       if cmd[1] == "startpos":
         board = chess.Board()
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         move = get_move(board, limit=int(cmd[2]))
       else:
         move = get_move(board)
-      # print("bestmove %s" % move)
+      print("bestmove %s" % move)
     elif cmd[0] == "quit":
       exit(0)
       
