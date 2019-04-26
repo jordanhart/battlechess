@@ -4,6 +4,7 @@ import time
 import random
 import numpy as np
 import time
+import chess
 
 def piece_score(symbol):
   symbol = symbol.upper()
@@ -17,12 +18,11 @@ def piece_score(symbol):
     return 5
   if symbol == "Q":
     return 9
-  if symbol == "K":
-    return 100
   return 0
 
 # def game_over
 
+large_number = 999
 
 
 def pieces_score(board, turn):
@@ -40,6 +40,19 @@ def utility(board, turn):
    score = 0
    score += pieces_score(board, turn)
    score -= pieces_score(board, not turn)
+
+   if board.is_game_over():
+    result = board.result()
+    if turn and result == "1-0":
+      return large_number
+    if not turn and result == "0-1":
+      return -large_number
+    elif result == "1/2-1/2":
+      if score > 0:
+        return large_number // 10
+      else:
+        return -large_number // 10
+
    return score
 
 
@@ -50,37 +63,55 @@ def get_move(board, limit=100):
   start = time.time() * 1000
 
 
-  move = random.choice(list(board.legal_moves))
+  random_move = random.choice(list(board.legal_moves))
 
   turn = board.turn
 
   
-  i = 1
+  i = 2
+  max_move = None
   while time.time() * 1000 - start < limit - 30:
-      max_score, max_move = tree(board=board, time_start=start, maximize=turn, turn=turn, turns_left=i, limit=limit)
+      score, move = tree(board=board, time_start=start, maximize=turn, turn=turn, turns_left=i, limit=limit)
+      if move != None:
+        max_move = move
       i += 1
-  if max_move == None:
-    return move
-  return max_move
+  if max_move != None:
+    return max_move
+  return random_move
 
 
 
-def tree(board, time_start, maximize, turn, turns_left, limit):
+def tree(board, time_start, maximize, turn, turns_left, limit, alpha=float('-inf'), beta=float('inf')):
   if time.clock() * 1000 - time_start > limit - 30 or turns_left <= 0:
+
     return utility(board, turn), None
   moves = list(board.legal_moves)
-  max_score = 0
+  if maximize:
+    max_score = float('-inf')
+  else:
+    max_score = float('inf')
+
+
   max_move = None
   for move in moves:
     new_board = board.copy()
     new_board.push(move)
-    score, move = tree(new_board, time_start, not maximize, turn,  turns_left - 1, limit)
-    if maximize and score > max_score:
-      max_score = score
-      max_move = move
-    if not maximize and score < max_score:
-      max_score = score
-      max_move = move
+    score, new_move = tree(new_board, time_start, not maximize, turn,  turns_left - 1, limit, alpha, beta)
+    if maximize:
+      if score != None and score > max_score:
+        max_score = score
+        max_move = new_move
+      alpha = max( alpha, max_score)
+      if beta <= alpha:
+          break
+    if not maximize:
+      if score != None and score < max_score:
+        max_score = score
+        max_move = new_move
+      beta = min(beta, max_score)
+      if beta <= alpha:
+        break
+
   return max_score, max_move
 
 
