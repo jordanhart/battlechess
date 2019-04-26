@@ -36,7 +36,7 @@ def pieces_score(board, turn):
 
 
 
-def utility(board, turn):
+def utility(board, turn, move=None):
    score = 0
    score += pieces_score(board, turn)
    score -= pieces_score(board, not turn)
@@ -52,6 +52,12 @@ def utility(board, turn):
         return large_number // 10
       else:
         return -large_number // 10
+
+   if move:
+    if board.board.is_capture(move):
+      score += .1
+    if board.is_into_check(move):
+      score += .1
 
    return score
 
@@ -82,10 +88,13 @@ def get_move(board, limit=100):
 
 
 def tree(board, time_start, maximize, turn, turns_left, limit, alpha=float('-inf'), beta=float('inf')):
-  if time.clock() * 1000 - time_start > limit - 30 or turns_left <= 0:
-
+  if time.time() * 1000 - time_start > limit - 30 or turns_left <= 0:
     return utility(board, turn), None
   moves = list(board.legal_moves)
+  np.random.shuffle(moves)
+  sorted_moves = sorted(moves, key=lambda m: board.is_into_check(m) or board.is_capture(m), reverse=True)
+
+
   if maximize:
     max_score = float('-inf')
   else:
@@ -93,7 +102,7 @@ def tree(board, time_start, maximize, turn, turns_left, limit, alpha=float('-inf
 
 
   max_move = None
-  for move in moves:
+  for move in sorted_moves:
     new_board = board.copy()
     new_board.push(move)
     score, new_move = tree(new_board, time_start, not maximize, turn,  turns_left - 1, limit, alpha, beta)
@@ -111,7 +120,6 @@ def tree(board, time_start, maximize, turn, turns_left, limit, alpha=float('-inf
       beta = min(beta, max_score)
       if beta <= alpha:
         break
-
   return max_score, max_move
 
 
